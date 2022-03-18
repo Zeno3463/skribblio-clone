@@ -31,7 +31,13 @@ const handler = (req: any, res: any) => {
 
 			socket.on('update-answer', data => {
 				const { newAnswer, roomId } = data;
+				console.log(newAnswer);
 				io.to(roomId).emit('update-answer', newAnswer);
+			})
+
+			socket.on('update-chat', data => {
+				const { newInputVal, roomId } = data;
+				io.to(roomId).emit('update-chat', newInputVal);
 			})
 		})
 	

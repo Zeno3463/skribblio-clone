@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import CanvasDraw from 'react-canvas-draw';
 import io, { Socket } from 'socket.io-client';
+import randomWords from 'random-words';
 let socket: Socket;
 
 const Room = () => {
@@ -26,9 +27,6 @@ const Room = () => {
 				const { currRoomId, currUsers } = data;
 				setRoomId(currRoomId);
 				setUsers(currUsers);
-				console.log(currUsers);
-				if (answer) socket.emit('update-answer', { newAnswer: answer, roomId: roomId });
-				else if (currUsers.length === 1) socket.emit('start-round', roomId);
 			})
 
 			socket.on('update-answer', newAnswer => {
@@ -41,33 +39,43 @@ const Room = () => {
 				setAnswerChoices(answerChoices);
 				setRoundStarted(true);
 			})
+
+			socket.on('update-chat', newInputVal => {
+				let newChat = chat;
+				newChat.push(newInputVal);
+				setChat(newChat);
+			})
 		})
 	}, []);
 
 	const updateChat = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key !== 'Enter') return;
-		socket.emit('update-chat', inputVal);
+		socket.emit('update-chat', { newInputVal: `${userName}: ${inputVal}`, roomId });
 		setInputVal("");
 	}
 
 	return <div>
 		{roomId ? null :
 		<div>
-			<button onClick={() => socket.emit('join-room', userName)}>join room</button>
-			<input type="text" placeholder='enter username' onChange={e => setUserName(e.target.value)} />
+			<button id='join-room' onClick={() => socket.emit('join-room', userName)}>join room</button>
+			<input type="text" id='username' placeholder='enter username' onChange={e => setUserName(e.target.value)} />
 		</div>}
-		{answer !== "" ? answer :
-		<div>
-			{answerChoices?.map((choice, i) => <button key={i} onClick={() => socket.emit('update-answer', {newAnswer: choice, roomId: roomId})}>{choice}</button>)}
-		</div>}
+
 		{users![drawer] === userName ? <div>
+			{answer !== "" ? answer :
+			<div>
+				{answerChoices?.map((choice, i) => <button key={i} onClick={() => socket.emit('update-answer', {newAnswer: choice, roomId: roomId})}>{choice}</button>)}
+			</div>}
 		</div>: null}
-		<div>
+		
+		<div id='users'>
 			{users.map((user, index) => <div key={index}>{user}</div>)}
 		</div>
+		
 		<CanvasDraw />
-		<input type="text" value={inputVal} onChange={e => setInputVal(e.target.value)} onKeyDown={updateChat} />
-		<div>
+		
+		<input type="text" id='chat-input' value={inputVal} onChange={e => setInputVal(e.target.value)} onKeyDown={updateChat} />
+		<div id='chat-log'>
 			{chat?.map((chat, index) => <p key={index}>{chat}</p>)}
 		</div>
 	</div>
