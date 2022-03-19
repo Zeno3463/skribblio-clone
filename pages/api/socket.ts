@@ -25,19 +25,15 @@ const handler = (req: any, res: any) => {
 			})
 
 			socket.on('start-round', roomId => {
-				console.log('received');
 				io.to(roomId).emit('start-round', randomWords({exactly: 3, maxLength: 9}));
 			})
 
-			socket.on('update-answer', data => {
-				const { newAnswer, roomId } = data;
-				console.log(newAnswer);
+			socket.on('update-answer', ({newAnswer, roomId}) => {
 				io.to(roomId).emit('update-answer', newAnswer);
 			})
 
-			socket.on('update-chat', data => {
-				const { newInputVal, roomId } = data;
-				io.to(roomId).emit('update-chat', newInputVal);
+			socket.on('update-chat', ({chat, newInputVal, roomId}) => {
+				io.to(roomId).emit('update-chat', [...chat, newInputVal]);
 			})
 		})
 	

@@ -40,9 +40,7 @@ const Room = () => {
 				setRoundStarted(true);
 			})
 
-			socket.on('update-chat', newInputVal => {
-				let newChat = chat;
-				newChat.push(newInputVal);
+			socket.on('update-chat', newChat => {
 				setChat(newChat);
 			})
 		})
@@ -50,7 +48,7 @@ const Room = () => {
 
 	const updateChat = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key !== 'Enter') return;
-		socket.emit('update-chat', { newInputVal: `${userName}: ${inputVal}`, roomId });
+		socket.emit('update-chat', { chat, newInputVal: `${userName}: ${inputVal}`, roomId });
 		setInputVal("");
 	}
 
